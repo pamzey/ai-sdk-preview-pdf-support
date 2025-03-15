@@ -33,7 +33,7 @@ To run the example locally you need to:
 
 ## Learn More
 
-To learn more about Vercel AI SDK or Next.js take a look at the following resources:
+To learn more about Vercel AI SDK or Next.js take a look at the following resources 2025:
 
 - [AI SDK docs](https://sdk.vercel.ai/docs)
 - [Vercel AI Playground](https://play.vercel.ai)
