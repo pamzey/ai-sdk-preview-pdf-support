@@ -72,6 +72,14 @@ const QuestionCard: React.FC<{
   );
 };
 
+const formatTime = (seconds: number): string => {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(
+    remainingSeconds,
+  ).padStart(2, "0")}`;
+};
+
 export default function Quiz({
   questions,
   clearPDF,
@@ -84,6 +92,7 @@ export default function Quiz({
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [score, setScore] = useState<number | null>(null);
   const [progress, setProgress] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(300); // 5 minutes in seconds
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -91,6 +100,17 @@ export default function Quiz({
     }, 100);
     return () => clearTimeout(timer);
   }, [currentQuestionIndex, questions.length]);
+
+  useEffect(() => {
+    if (!isSubmitted && timeLeft > 0) {
+      const intervalId = setInterval(() => {
+        setTimeLeft((prevTime) => prevTime - 1);
+      }, 1000);
+      return () => clearInterval(intervalId);
+    } else if (timeLeft === 0 && !isSubmitted) {
+      handleSubmit(); // Automatically submit when time is up
+    }
+  }, [isSubmitted, timeLeft]);
 
   const handleSelectAnswer = (answer: string) => {
     if (!isSubmitted) {
@@ -128,6 +148,7 @@ export default function Quiz({
     setScore(null);
     setCurrentQuestionIndex(0);
     setProgress(0);
+    setTimeLeft(300); // Reset timer to 5 minutes
   };
 
   const currentQuestion = questions[currentQuestionIndex];
@@ -135,11 +156,14 @@ export default function Quiz({
   return (
     <div className="min-h-screen bg-background text-foreground">
       <main className="container mx-auto px-4 py-12 max-w-4xl">
-        <h1 className="text-3xl font-bold mb-8 text-center text-foreground">
-          {title}
-        </h1>
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-foreground">{title}</h1>
+          <div className="font-medium">
+            Time Remaining: <span className="font-bold">{formatTime(timeLeft)}</span>
+          </div>
+        </div>
         <div className="relative">
-          {!isSubmitted && <Progress value={progress} className="h-1 mb-8" />}
+          {!isSubmitted && <Progress value={progress} className="h-4 mb-8" />}
           <div className="min-h-[400px]">
             {" "}
             {/* Prevent layout shift */}
@@ -164,9 +188,10 @@ export default function Quiz({
                       <Button
                         onClick={handlePreviousQuestion}
                         disabled={currentQuestionIndex === 0}
-                        variant="ghost"
+                        variant="secondary"
+                        className="text-black"
                       >
-                        <ChevronLeft className="mr-2 h-4 w-4" /> Previous
+                        <ChevronLeft className="mr-2 h-4 w-4" /> Back
                       </Button>
                       <span className="text-sm font-medium">
                         {currentQuestionIndex + 1} / {questions.length}
@@ -174,7 +199,8 @@ export default function Quiz({
                       <Button
                         onClick={handleNextQuestion}
                         disabled={answers[currentQuestionIndex] === null}
-                        variant="ghost"
+                        variant="default"
+                        className="text-black"
                       >
                         {currentQuestionIndex === questions.length - 1
                           ? "Submit"

@@ -57,4 +57,3 @@ export default function QuizReview({ questions, userAnswers }: QuizReviewProps) 
     </Card>
   )
 }
-
