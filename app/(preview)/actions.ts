@@ -3,8 +3,13 @@
 import { google } from "@ai-sdk/google";
 import { generateObject } from "ai";
 import { z } from "zod";
+import { headers } from "next/headers";
 
 export const generateQuizTitle = async (file: string) => {
+  // Get the origin from headers
+  const headersList = await headers();
+  const origin = headersList.get("origin") || "";
+
   const result = await generateObject({
     model: google("gemini-1.5-flash-latest"),
     schema: z.object({
