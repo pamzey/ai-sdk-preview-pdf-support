@@ -98,15 +98,6 @@ export default function LearningHub() {
     setFiles(validFiles);
   }, [isDragging]);
 
-  const encodeFileAsBase64 = useCallback((file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (error) => reject(error);
-    });
-  }, []);
-
   const handleSubmitWithFiles = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!files.length) {
@@ -115,19 +106,56 @@ export default function LearningHub() {
     }
 
     try {
-      const encodedFiles = await Promise.all(
-        files.map(async (file) => ({
+      // Add loading state feedback
+      const loadingToast = toast.loading("Processing your PDF file...");
+
+      // Validate file size before encoding
+      const file = files[0];
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("File size must be under 5MB.");
+        toast.dismiss(loadingToast);
+        return;
+      }
+
+      // Encode file with progress tracking
+      const data = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const base64String = reader.result as string;
+            // Validate the base64 string
+            if (!base64String || !base64String.includes('base64,')) {
+              throw new Error('Invalid file encoding');
+            }
+            resolve(base64String);
+          } catch (error) {
+            reject(error);
+          }
+        };
+        reader.onerror = () => reject(new Error('Failed to read file'));
+        reader.readAsDataURL(file);
+      });
+
+      // Submit with proper error handling
+      await submit({ 
+        files: [{
           name: file.name,
           type: file.type,
-          data: await encodeFileAsBase64(file),
-        })),
-      );
-      submit({ files: encodedFiles });
+          data
+        }]
+      });
+
+      toast.dismiss(loadingToast);
     } catch (error) {
-      toast.error("Failed to process the file. Please try again.");
+      console.error('File processing error:', error);
+      toast.error(
+        error instanceof Error 
+          ? error.message 
+          : "Failed to process the file. Please try again."
+      );
       setFiles([]);
     }
-  }, [files, submit, encodeFileAsBase64]);
+  }, [files, submit]);
 
   const handleClearContent = useCallback(() => {
     setFiles([]);
