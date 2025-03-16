@@ -98,13 +98,22 @@ export default function LearningHub() {
     setFiles(validFiles);
   }, [isDragging]);
 
+  const encodeFileAsBase64 = useCallback((file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
+  }, []);
+
   const handleSubmitWithFiles = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!files.length) {
       toast.error("Please select a PDF file first.");
       return;
     }
-    
+
     try {
       const encodedFiles = await Promise.all(
         files.map(async (file) => ({
@@ -118,16 +127,7 @@ export default function LearningHub() {
       toast.error("Failed to process the file. Please try again.");
       setFiles([]);
     }
-  }, [files, submit]);
-
-  const encodeFileAsBase64 = useCallback((file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (error) => reject(error);
-    });
-  }, []);
+  }, [files, submit, encodeFileAsBase64]);
 
   const handleClearContent = useCallback(() => {
     setFiles([]);
