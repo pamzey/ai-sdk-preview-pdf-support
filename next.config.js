@@ -6,10 +6,10 @@ const nextConfig = {
       bodySizeLimit: '5mb' // Match our client-side limit
     }
   },
+  // Configure routing and middleware
   async headers() {
     return [
       {
-        // Apply to all routes
         source: '/:path*',
         headers: [
           {
@@ -19,6 +19,18 @@ const nextConfig = {
         ],
       },
     ]
+  },
+  // Configure API routes
+  async rewrites() {
+    return {
+      beforeFiles: [
+        // Ensure API routes are handled correctly
+        {
+          source: '/api/:path*',
+          destination: '/api/:path*',
+        },
+      ],
+    }
   },
 }
 

@@ -79,25 +79,6 @@ export default function LearningHub() {
     },
   });
 
-  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-    if (isSafari && isDragging) {
-      toast.error("Safari does not support drag & drop. Please use the file picker.");
-      return;
-    }
-
-    const selectedFiles = Array.from(e.target.files || []);
-    const validFiles = selectedFiles.filter(
-      (file) => file.type === "application/pdf" && file.size <= 5 * 1024 * 1024,
-    );
-
-    if (validFiles.length !== selectedFiles.length) {
-      toast.error("Only PDF files under 5MB are allowed.");
-      return;
-    }
-    setFiles(validFiles);
-  }, [isDragging]);
-
   const handleSubmitWithFiles = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!files.length) {
@@ -156,6 +137,25 @@ export default function LearningHub() {
       setFiles([]);
     }
   }, [files, submit]);
+
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    if (isSafari && isDragging) {
+      toast.error("Safari does not support drag & drop. Please use the file picker.");
+      return;
+    }
+
+    const selectedFiles = Array.from(e.target.files || []);
+    const validFiles = selectedFiles.filter(
+      (file) => file.type === "application/pdf" && file.size <= 5 * 1024 * 1024,
+    );
+
+    if (validFiles.length !== selectedFiles.length) {
+      toast.error("Only PDF files under 5MB are allowed.");
+      return;
+    }
+    setFiles(validFiles);
+  }, [isDragging]);
 
   const handleClearContent = useCallback(() => {
     setFiles([]);

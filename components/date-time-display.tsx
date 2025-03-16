@@ -3,15 +3,27 @@
 import { useState, useEffect } from "react";
 
 export function DateTimeDisplay() {
-  const [currentTime, setCurrentTime] = useState(new Date());
+  const [currentTime, setCurrentTime] = useState<Date | null>(null);
 
   useEffect(() => {
+    // Only set time on client-side to avoid hydration mismatch
+    setCurrentTime(new Date());
+
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
 
     return () => clearInterval(timer);
   }, []);
+
+  // Render nothing on server, render time only on client
+  if (!currentTime) {
+    return (
+      <div className="p-4 bg-gray-100 dark:bg-gray-800 text-center font-mono">
+        Loading...
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 bg-gray-100 dark:bg-gray-800 text-center font-mono">
